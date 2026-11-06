@@ -15,6 +15,9 @@ This report uses the assignment brief and the instructor-supplied FreshCart note
 The public repository is live at `https://github.com/mahip004/freshcart-pipelines`. It has separate commits for the project overview, CI, Mage blocks, FreshCart notebook, stream scripts, and report. `git log --oneline` output at report preparation time:
 
 ```text
+ceab90e Mark identity and repository checklist complete
+1ef4134 Update submission status with verified CI runs
+053933e Personalize report and record CI run evidence
 93ed60e Restore the 80/20 split after the failing CI demonstration
 adbcea7 Demonstrate failing CI with a 30 percent test split
 a5658bd Fix pytest module import path in CI
