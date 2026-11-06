@@ -2,19 +2,50 @@
 
 **Course:** Data Engineering  
 **Assignment:** From Git to Gold  
-**Student:** [add name]  
-**Roll number:** [add roll number]  
+**Student:** Mahima Pandey  
+**Roll number:** 23BCS155  
 **Repository:** https://github.com/mahip004/freshcart-pipelines
 
-This report uses the assignment brief and the instructor-supplied FreshCart notebooks. The FreshCart notebook in `elt/` is a sanitized copy: instructor login details and instructor run outputs were removed, and the required currency rule and sixth quality check were added. No Snowflake/Mage/GitHub Actions/RabbitMQ execution evidence has been generated yet. Replace the remaining bracketed prompts with your own account results and screenshots before submission.
+This report uses the assignment brief and the instructor-supplied FreshCart notebooks. The FreshCart notebook in `elt/` is a sanitized copy: instructor login details and instructor run outputs were removed, and the required currency rule and sixth quality check were added. GitHub Actions now has a verified green run, an intentional red run from the temporary 30% split, and a green fix run. Snowflake, Mage and RabbitMQ still need to be run in your own course accounts. Add the required Actions screenshots and replace the remaining result prompts before submission.
 
 ## A. Git and CI/CD
 
 ### A1. Repository
 
-The repo implements the required directory layout, ignores `.env`, CSV, PKL, logs and Python caches, and includes the pytest test plus GitHub Actions workflow. Publish this local directory as `freshcart-pipelines`. The current local commit history should be pasted below after staged commits; capture the Actions green run and the temporary failing run in your own GitHub account.
+The public repository is live at `https://github.com/mahip004/freshcart-pipelines`. It has separate commits for the project overview, CI, Mage blocks, FreshCart notebook, stream scripts, and report. `git log --oneline` output at report preparation time:
 
-`git log --oneline`: [paste output after publishing/commits]
+```text
+93ed60e Restore the 80/20 split after the failing CI demonstration
+adbcea7 Demonstrate failing CI with a 30 percent test split
+a5658bd Fix pytest module import path in CI
+113419e Document remaining account-run evidence
+dd3952f Add numbered assignment answers and evidence checklist
+a0c4256 Add Mage pipeline metadata at the CLI pipeline path
+6f87031 Place the exporter in Mage's data_exporters directory
+dfdfc4a Place the loader in Mage's data_loaders directory
+1c6319e Add topic-matched drivers with ACK and NACK handling
+037fb86 Add the topic exchange order dispatcher
+b862ff4 Document the RabbitMQ run procedure and ACK behavior
+1daf67a Add the sanitized FreshCart notebook with validation checks
+00a605e Add FreshCart SQL validation and idempotency patterns
+5fdd327 Add the Iris pipeline inspection notebook
+f3be08c Wire the Mage pipeline and evaluation branch
+9c279cd Add the predictions exporter block
+4edec14 Add the evaluation branch with metrics
+1a25367 Add the tested decision tree block
+abc6c5a Add the reproducible train-test split block
+b23b6cc Add the dataset validation block
+fc0e2f3 Add the Iris data loader block
+55a46ae Initialize Mage exporter package
+da5c5bf Initialize Mage transformer package
+c2e6e72 Initialize Mage loader package
+8a774cf Initialize the Iris project package
+518e96d Run pytest on pushes and pull requests
+b1a949a Add the Iris split regression test
+dd495df Declare Python project dependencies
+e7fa66d Ignore secrets and generated artifacts
+c230113 Add project overview and setup instructions
+```
 
 ### A2. Git command table
 
@@ -31,7 +62,7 @@ After `git commit`, a teammate cannot see the code on GitHub yet: the commit exi
 
 ### A3. CI
 
-`tests/test_prepare_data.py` checks the required 120/30 split and the workflow runs pytest on pushes and pull requests using Python 3.12. **Evidence still required:** screenshot of a green GitHub Actions run; temporarily change `test_size` to `0.3`, commit and capture the red run; restore `0.2`, commit the fix and capture its green run. Do not claim these remote runs before they exist.
+`tests/test_prepare_data.py` checks the required 120/30 split and the workflow runs pytest on pushes and pull requests using Python 3.12. The green run passed after the import-path fix: [Actions run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240057166). The temporary `test_size=0.3` commit failed as expected with 105 training rows instead of 120: [intentional failing run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240222845). Restoring `0.2` passed: [fix run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240377107). **Still add screenshots** of the red and green run pages to the appendix.
 
 ## B. FreshCart ELT on Snowflake
 
