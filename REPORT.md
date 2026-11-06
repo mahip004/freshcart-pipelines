@@ -180,8 +180,8 @@ Not implemented as a live end-to-end integration because the FreshCart notebook 
 
 ## Final evidence checklist
 
-- [ ] Replace name/roll placeholders and put the GitHub repository URL in the cover.
-- [ ] Publish repo and capture at least five meaningful commits; include `git log --oneline`.
+- [x] Add Mahima Pandey, roll number 23BCS155, and the GitHub repository URL to the cover.
+- [x] Publish the repo with separate meaningful commits and include `git log --oneline`.
 - [ ] Add GitHub green/red/fix screenshots.
 - [ ] Run FreshCart baseline, validation, SCD2 and quality check in Snowflake; add outputs/screenshots.
 - [ ] Run Mage matrix and evaluation branch; add actual metrics and UI screenshot.
