@@ -9,7 +9,7 @@ except ImportError:
     def test(fn): return fn
 
 @transformer
-def transform(df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42) -> pd.DataFrame:
+def transform(df: pd.DataFrame, test_size: float = 0.3, random_state: int = 42) -> pd.DataFrame:
     """Return Iris rows tagged train/test using a reproducible stratified split."""
     if not 0 < test_size < 1:
         raise ValueError("test_size must be between 0 and 1")
@@ -28,4 +28,3 @@ def transform(df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42) 
 def test_split_sizes(output: pd.DataFrame, **kwargs):
     assert (output["split"] == "train").sum() == 120
     assert (output["split"] == "test").sum() == 30
-
