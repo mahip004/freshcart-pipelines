@@ -1,12 +1,14 @@
 # Report answers and evidence checklist
 
+> **Screenshot filing made simple:** screenshots are grouped under `evidence/` by topic. The checklist is in [EVIDENCE_GUIDE.md](EVIDENCE_GUIDE.md). The same images are included in this report's appendix.
+
 **Course:** Data Engineering  
 **Assignment:** From Git to Gold  
 **Student:** Mahima Pandey  
 **Roll number:** 23BCS155  
 **Repository:** https://github.com/mahip004/freshcart-pipelines
 
-This report uses the assignment brief and the instructor-supplied FreshCart notebooks. The FreshCart notebook in `elt/` is a sanitized copy: instructor login details and instructor run outputs were removed, and the required currency rule and sixth quality check were added. GitHub Actions now has a verified green run, an intentional red run from the temporary 30% split, and a green fix run. Snowflake, Mage and RabbitMQ still need to be run in your own course accounts. Add the required Actions screenshots and replace the remaining result prompts before submission.
+This report uses the assignment brief, instructor-supplied FreshCart materials, and the student's captured service evidence. The submitted FreshCart notebook is sanitized: instructor credentials and outputs were removed, and the currency rule and sixth quality check were added. This version documents the available GitHub, Snowflake baseline, and RabbitMQ broker/dispatcher evidence. Mage is intentionally left pending. Some Snowflake scenario results and RabbitMQ consumer logs were not included in the supplied screenshots; they are identified below and are not invented.
 
 ## A. Git and CI/CD
 
@@ -65,24 +67,26 @@ After `git commit`, a teammate cannot see the code on GitHub yet: the commit exi
 
 ### A3. CI
 
-`tests/test_prepare_data.py` checks the required 120/30 split and the workflow runs pytest on pushes and pull requests using Python 3.12. The green run passed after the import-path fix: [Actions run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240057166). The temporary `test_size=0.3` commit failed as expected with 105 training rows instead of 120: [intentional failing run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240222845). Restoring `0.2` passed: [fix run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240377107). **Still add screenshots** of the red and green run pages to the appendix.
+`tests/test_prepare_data.py` checks the required 120/30 split and the workflow runs pytest on pushes and pull requests using Python 3.12. The green run passed after the import-path fix: [Actions run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240057166). The temporary `test_size=0.3` commit failed as expected with 105 training rows instead of 120: [intentional failing run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240222845). Restoring `0.2` passed: [fix run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240377107). The appendix includes the commit/check summary screenshot; separate screenshots of the red failure details and final green run details were not supplied.
 
 ## B. FreshCart ELT on Snowflake
 
-The instructor notebook supplies the DDL, mock API fixtures and transformations. The expected values below are acceptance targets from the assignment/course material; they are not a claim that your Snowflake run occurred.
+The instructor notebook supplies the DDL, mock API fixtures and transformations. The target values from the assignment are compared with the captured baseline outputs below.
 
 ### B1. Baseline
 
 | Check | Expected result from brief | Actual run |
 |---|---:|---|
-| Bronze raw orders | 8 | [run notebook and paste] |
-| Silver clean | 6 | [paste] |
-| Quarantine | 2: ORD-1004, ORD-1006 | [paste] |
-| Deduplicated orders | 4 | [paste] |
-| Gold aggregate | 4 orders; ₹7,785.00; 126 points | [paste] |
-| Rejected share | 25% | [paste] |
+| Bronze raw orders | 8 per extraction | 16 in the final table after two append-only extractions |
+| Silver clean | 6 | 6 |
+| Quarantine | 2: ORD-1004, ORD-1006 | 2 |
+| Deduplicated orders | 4 | 4 |
+| Gold aggregate | 4 orders; ₹7,785.00; 126 points | 4 orders; ₹7,785.00; 126 points |
+| Rejected share | 25% | 25% |
 
-**Evidence:** append screenshots of notebook cells and Snowflake output.
+**Captured result:** one extraction contained 8 input records (6 web and 2 mobile). The final bronze-table screenshot shows 16 rows, consistent with two append-only extracts. Silver clean contains 6 rows, quarantine 2, deduplicated orders 4, and Gold 4 orders, ₹7,785.00 revenue, and 126 points. The run reports 25% rejected and zero for each displayed quality check.
+
+**Evidence:** baseline summary, bronze source rows, silver rows, and quarantine/dedup results are in the Snowflake appendix. The separate connection screenshot is excluded because it displays account/user details.
 
 ### B2. Record trace
 
@@ -92,51 +96,53 @@ ORD-1005's date is 2026-09-03, when Priya's SCD2 tier becomes Gold. The order-da
 
 ### B3. Currency validation
 
-The submitted notebook adds `IFF(currency NOT IN ('INR', 'USD'), 'unsupported_currency', NULL)` to `ARRAY_CONSTRUCT_COMPACT(...)` in `SQL_10_ORDERS_CLEAN`. In the supplied mock data, ORD-1006 already has `bad_email` and `bad_pincode`; with the rule it also has `unsupported_currency` because its normalized currency is EUR. Its gold contribution remains zero because it was already excluded from `silver.orders_clean` and quarantined. The quarantine `INSERT` prevents another copy with the same source, null-safe order ID, and `updated_at` through its `NOT EXISTS` clause; a `QUALIFY ROW_NUMBER()` also retains one latest copy per source/order/version. Capture the reasons array before and after by commenting out the added rule for the first run, then restoring it and rerunning.
+The submitted notebook adds `IFF(currency NOT IN ('INR', 'USD'), 'unsupported_currency', NULL)` to `ARRAY_CONSTRUCT_COMPACT(...)` in `SQL_10_ORDERS_CLEAN`. In the supplied mock data, ORD-1006 already has `bad_email` and `bad_pincode`; with the rule it also has `unsupported_currency` because its normalized currency is EUR. Its gold contribution remains zero because it was already excluded from `silver.orders_clean` and quarantined. The quarantine `INSERT` prevents another copy with the same source, null-safe order ID, and `updated_at` through its `NOT EXISTS` clause; a `QUALIFY ROW_NUMBER()` also retains one latest copy per source/order/version.
+
+**Run evidence still needed:** the captured quarantine screenshot clips the end of ORD-1006's reasons array, and there is no before-rule screenshot. Add a clear before/after pair to prove the exact array change.
 
 ### B4. SCD2 and idempotency
 
-**Prediction written before run:** CUST-02 currently has one Silver version from 2024-01-15. Adding Gold effective 2026-08-15 yields two SCD2 rows, with Silver ending 2026-08-14. ORD-1002 is dated 2026-09-01, so its tier becomes Gold. Its INR value is `42.50 × 83.20 = ₹3,536`; points rise from `FLOOR(3536/100) × 1 = 35` Silver points to `FLOOR(3536/100) × 2 = 70` Gold points. The expected total rises from 126 to 161 points, and one gold row (ORD-1002) should receive a changed `published_at` because its row hash changes. Record this prediction before running, then fill the actual column from Snowflake.
+**Prediction:** CUST-02 currently has one Silver version from 2024-01-15. Adding Gold effective 2026-08-15 yields two SCD2 rows, with Silver ending 2026-08-14. ORD-1002 is dated 2026-09-01, so its tier becomes Gold. Its INR value is `42.50 × 83.20 = ₹3,536`; points rise from `FLOOR(3536/100) × 1 = 35` Silver points to `FLOOR(3536/100) × 2 = 70` Gold points. The expected total rises from 126 to 161 points, and one gold row (ORD-1002) should receive a changed `published_at` because its row hash changes. These are derived predictions; actual post-change measurements were not captured.
 
 | Quantity | Prediction | Actual after run |
 |---|---|---|
-| CUST-02 rows in `dim.customers_scd2` | 2; Silver version closes 2026-08-14 | [measure] |
-| Tier used for ORD-1002 | Gold | [measure] |
-| ORD-1002 points | 70 (₹3,536 / 100 rounded down × Gold multiplier 2) | [measure] |
-| Total gold points | 161 (126 + 35) | [measure] |
-| Gold rows with changed `published_at` | 1: ORD-1002 | [measure] |
+| CUST-02 rows in `dim.customers_scd2` | 2; Silver version closes 2026-08-14 | Not captured |
+| Tier used for ORD-1002 | Gold | Not captured |
+| ORD-1002 points | 70 (₹3,536 / 100 rounded down × Gold multiplier 2) | Not captured |
+| Total gold points | 161 (126 + 35) | Not captured |
+| Gold rows with changed `published_at` | 1: ORD-1002 | Not captured |
 
 `row_hash` gives each output row a fingerprint of relevant business values. The `MERGE` matches on a stable business key and updates a target only when the source hash differs, while inserting previously unseen keys. This prevents a rerun from duplicating unchanged gold facts and lets `published_at` remain stable when content is unchanged. Bronze still grows by eight rows per run because extraction appends a fresh copy of the raw API sample unless the landing/load step itself deduplicates it.
 
 ### B5. Quality check and ELT
 
-The notebook adds a sixth check for future orders: `SELECT COUNT_IF(order_date > CURRENT_DATE()) FROM silver.orders_dedup`; it should return 0. Add a temporary otherwise-valid mock web order dated 2099-01-01, rerun the pipeline and capture `PROBLEM`, then remove the mock and rerun to confirm 0. **Evidence:** include both outputs. ELT fits FreshCart because raw data can be loaded quickly into Snowflake and transformed there with SQL, keeping the original landing data available for reprocessing. Snowflake's warehouse can scale the transformations where the data already sits. ETL would win when transformations must happen before loading, such as when policy forbids transferring raw sensitive fields into the destination.
+The notebook adds a sixth check for future orders: `SELECT COUNT_IF(order_date > CURRENT_DATE()) FROM silver.orders_dedup`; it should return 0. The captured baseline shows zero future-dated orders. The temporary 2099 order injection and subsequent clean rerun were not captured, so this scenario is not yet evidenced. ELT fits FreshCart because raw data can be loaded quickly into Snowflake and transformed there with SQL, keeping the original landing data available for reprocessing. Snowflake's warehouse can scale the transformations where the data already sits. ETL would win when transformations must happen before loading, such as when policy forbids transferring raw sensitive fields into the destination.
 
 ## C. Mage Iris pipeline
 
-### C1. Graph and run
+### C1. Graph and run - pending
 
 Graph: `load_iris (data_loader) → validate_iris (transformer) → prepare_data (transformer) → train_model (transformer) → {save_results (data_exporter), evaluate_model (transformer)}`. Each block includes an attached `@test`. The project's metadata and importable blocks are included. **Run evidence required:** use Mage's CLI `mage run iris_project iris_classifier --test` in the configured Mage environment and append its output; The Mage Iris class materials and runtime were not supplied here.
 
-### C2. Test gate
+### C2. Test gate - pending
 
 The `train_model` test enforces accuracy >= 0.85. A failing block test marks the block run as failed, so downstream exporters are not scheduled from that failed output; `save_results` therefore does not write a prediction file. This gate prevents invalid artifacts from being mistaken for valid outputs and avoids having to detect and remove a bad file later.
 
 | max_depth | Test accuracy | Test passed? | CSV created? |
 |---:|---:|---|---|
-| 1 | [run in Mage] | [measure] | [observe after deleting before run] |
-| 2 | [run in Mage] | [measure] | [observe] |
-| 3 | [run in Mage] | [measure] | [observe] |
-| 4 | [run in Mage] | [measure] | [observe] |
-| 5 | [run in Mage] | [measure] | [observe] |
+| 1 | Pending Mage run | Pending | Pending |
+| 2 | Pending Mage run | Pending | Pending |
+| 3 | Pending Mage run | Pending | Pending |
+| 4 | Pending Mage run | Pending | Pending |
+| 5 | Pending Mage run | Pending | Pending |
 
-Before each run delete `iris_predictions.csv`. Save the Mage run output and file state; do not substitute local expectations for the requested Mage evidence.
+Before each run delete `iris_predictions.csv`. Save the Mage run output and file state when Mage is completed.
 
-### C3. Evaluation branch
+### C3. Evaluation branch - pending
 
 `metadata.yaml` includes the branch from `train_model` to `save_results` and `evaluate_model`. The block returns a confusion matrix and a classification metrics table. **Evidence required:** run the project in Mage, include the actual confusion matrix/metrics, and capture the Cloudflare-tunnel Mage UI graph. Mage Iris class materials and a live tunnel were not supplied.
 
-### C4. Own block
+### C4. Own block - code prepared; Mage run pending
 
 `validate_iris` checks for no missing values and exactly three classes, with its own `@test`; it sits after `load_iris`. Commit it and verify CI remains green.
 
@@ -157,11 +163,11 @@ For key 6, `#` in `bangalore.#` matches zero or more words, so Control receives 
 
 ### D2. Build and run
 
-`stream/dispatcher.py` publishes JSON every two seconds to the durable `rapido-dispatch` topic exchange. `stream/driver.py NAME PATTERN` creates a private exclusive queue, binds the topic, prints deliveries and ACKs valid messages. **Evidence required:** run at least three drivers and dispatcher for two minutes against your broker, then include console output showing a D1 route match. A broker was not available here.
+`stream/dispatcher.py` publishes JSON every two seconds to the durable `rapido-dispatch` topic exchange. `stream/driver.py NAME PATTERN` creates a private exclusive queue, binds the topic, prints deliveries and ACKs valid messages. The captured dispatcher output shows published routing keys, and the RabbitMQ UI shows the broker, three temporary queues/consumers, and message-rate activity. The supplied screenshots do not show driver terminal output, so they do not prove the exact queue receiving a D1 key or the full two-minute run. Add a terminal screenshot showing the three listeners and a concrete routing match.
 
 ### D3. ACK/NACK
 
-A message without `zone` is rejected with `basic_nack(requeue=False)`; valid messages are ACKed. The dispatcher emits one malformed message every ten. If a driver crashes before ACK, the broker can redeliver the unacknowledged message after the connection closes. With `requeue=True`, a permanently malformed message may circulate continuously; reject without requeue or route it to a dead-letter queue.
+A message without `zone` is rejected with `basic_nack(requeue=False)`; valid messages are ACKed. The dispatcher emits one malformed message every ten. If a driver crashes before ACK, the broker can redeliver the unacknowledged message after the connection closes. With `requeue=True`, a permanently malformed message may circulate continuously; reject without requeue or route it to a dead-letter queue. The screenshot showing the driver's actual malformed-message discard is still needed to evidence this behavior.
 
 ## E. Integration and reflection
 
@@ -175,7 +181,7 @@ Git working tree → commits → GitHub remote → Actions CI
 
 The four pieces form one delivery path: Git records pipeline code, CI checks changes, FreshCart transforms batch order data into gold tables, Mage trains and evaluates a tested classifier, and RabbitMQ routes live order events by topic. The optional landing consumer would connect events to the same warehouse flow after the batch logic is adapted.
 
-**Reflection (complete after real runs):** [Describe one actual failure, the evidence you used to locate its cause, and the code/configuration change that fixed it. Do not invent a failure story.]
+**Reflection:** The intentional CI failure was caused by temporarily changing the test split to 30%, which produced 105 training rows instead of the required 120. The failed GitHub check exposed the mismatch. Restoring the 80/20 split returned the expected 120 training rows and 30 test rows, and the follow-up Actions run passed.
 
 ## Bonus stream-to-lakehouse
 
@@ -185,10 +191,39 @@ Not implemented as a live end-to-end integration because the FreshCart notebook 
 
 - [x] Add Mahima Pandey, roll number 23BCS155, and the GitHub repository URL to the cover.
 - [x] Publish the repo with separate meaningful commits and include `git log --oneline`.
-- [ ] Add GitHub green/red/fix screenshots.
-- [ ] Run FreshCart baseline, validation, SCD2 and quality check in Snowflake; add outputs/screenshots.
-- [ ] Run Mage matrix and evaluation branch; add actual metrics and UI screenshot.
-- [ ] Run RabbitMQ for two minutes and include routing plus ACK/NACK evidence.
-- [ ] Complete reflection from an actual failure.
+- [x] Add a GitHub commit/check summary screenshot; detailed Actions run-page screenshots are recommended.
+- [x] Capture Snowflake baseline, raw, clean, quarantine, and deduplicated results.
+- [ ] Capture Snowflake currency-rule before/after, SCD2 actuals, and future-order injection plus clean rerun.
+- [ ] Run Mage matrix and evaluation branch; add actual metrics and UI screenshot (left pending by request).
+- [ ] Add RabbitMQ driver terminal evidence for a concrete routing match and malformed-message discard.
+- [x] Complete reflection using the intentional CI failure and passing fix.
 - [ ] If claiming bonus, implement and rerun the stream-to-lakehouse consumer twice.
+
+## Evidence appendix - captured screenshots
+
+### GitHub
+
+![GitHub commit history with passing and failing checks](evidence/GitHub/github_commit_checks.png)
+
+### Snowflake
+
+![Snowflake baseline pipeline summary](evidence/Snowflake/snowflake_baseline_summary.png)
+
+![Snowflake bronze raw rows](evidence/Snowflake/snowflake_bronze_raw.png)
+
+![Snowflake silver clean rows](evidence/Snowflake/snowflake_silver_clean.png)
+
+![Snowflake quarantine reasons and deduplicated rows](evidence/Snowflake/snowflake_quarantine_dedup.png)
+
+### RabbitMQ
+
+![RabbitMQ dispatcher published events](evidence/RabbitMQ/rabbitmq_dispatcher_publishes.png)
+
+![RabbitMQ overview with active consumers and message rates](evidence/RabbitMQ/rabbitmq_overview_activity.png)
+
+![RabbitMQ temporary queues](evidence/RabbitMQ/rabbitmq_auto_delete_queues.png)
+
+### Mage
+
+Pending; no Mage screenshots or live-run results were supplied. This section will be completed after the Mage runs.
 

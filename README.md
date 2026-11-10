@@ -19,11 +19,12 @@ Never commit `.env`, Snowflake credentials, broker URLs, or generated CSV/PKL ou
 - `iris_project/`: importable Iris blocks with Mage decorator fallbacks, metadata and evaluation branch.
 - `stream/`: RabbitMQ dispatcher/driver and run instructions.
 - `elt/freshcart_elt.ipynb`: supplied course flow, with instructor credentials and outputs removed; includes the B3 currency rule and B5 quality check.
-- `REPORT.md`: numbered answers and evidence prompts. Replace prompts with your own account outputs and screenshots before submission.
+- `REPORT.md`: numbered assignment answers, captured non-Mage results, evidence appendix, and explicit remaining evidence checklist.
+- `report/23BCS155_Mahima_Pandey_Pipelines.pdf`: current report PDF; Mage and some Snowflake/RabbitMQ scenario evidence remain pending.
 
 ## GitHub Actions
 
-The repository is `https://github.com/mahip004/freshcart-pipelines`. Its Actions workflow runs pytest on pushes and pull requests using Python 3.12. Add your own red/green/fix run evidence to the report.
+The repository is `https://github.com/mahip004/freshcart-pipelines`. Its Actions workflow runs pytest on pushes and pull requests using Python 3.12. Run links and the available check-summary screenshot are recorded in `REPORT.md`.
 
 ## Snowflake
 

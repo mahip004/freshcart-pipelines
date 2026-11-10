@@ -1,8 +1,23 @@
 # Submission status
 
-The public GitHub repo is `https://github.com/mahip004/freshcart-pipelines`. It has separate feature commits, and the A3 workflow has a verified green run, intentional red run, and green fix run. Add screenshots from those Actions pages to the report appendix.
+Student: Mahima Pandey (23BCS155)
 
-The assignment brief and instructor-supplied FreshCart materials are available. The FreshCart notebook in `elt/` has instructor credentials and execution outputs removed; it contains the required unsupported-currency rule and sixth quality check. Run it with your own Snowflake account and replace the report result placeholders with your own outputs.
+Repository: https://github.com/mahip004/freshcart-pipelines
 
-The repo includes an Iris pipeline scaffold and RabbitMQ scripts. The supplied ZIP did not include the Mage Iris class project or broker configuration, so compare the Mage files with your course notebook and use your class Mage environment. Capture Snowflake, Mage and RabbitMQ evidence from your own sessions. Keep credentials out of Git.
+## Prepared
+
+- GitHub Actions red failure and green fix run recorded, with a commit/check summary screenshot.
+- Snowflake baseline results recorded: 6 silver rows, 2 quarantined rows, 4 deduplicated/gold orders, INR 7,785.00 revenue, 126 points, and 25% rejected share.
+- RabbitMQ broker, dispatcher publishing, and management UI activity captured.
+- Instructor credentials and run outputs remain removed from the sanitized notebook.
+- The report PDF includes the available screenshots and labels all unmeasured results honestly.
+
+## Still needed before a fully evidenced submission
+
+- Mage runs, metrics, and UI evidence (intentionally left pending for now).
+- Snowflake currency-rule before/after reason arrays, SCD2 post-change measurements, and the future-order injection plus clean rerun.
+- RabbitMQ driver console output proving a concrete route match and malformed-message discard/NACK.
+- Optional but recommended: separate GitHub Actions screenshots showing the failing run details and corrected passing run details.
+
+The full report is `REPORT.md`; the PDF is in `report/23BCS155_Mahima_Pandey_Pipelines.pdf`. Never commit secrets or the excluded Snowflake login screenshot.
 
