@@ -176,22 +176,18 @@ Git working tree → commits → GitHub remote → Actions CI
                                   │
                                   ├── tests Mage blocks before saving model output
                                   ├── FreshCart raw API → bronze → silver/quarantine → gold in Snowflake
-                                  └── RabbitMQ topic stream → driver queues → (bonus) landing → ELT → gold
+                                  └── RabbitMQ topic stream → driver queues
 ```
 
-The four pieces form one delivery path: Git records pipeline code, CI checks changes, FreshCart transforms batch order data into gold tables, Mage trains and evaluates a tested classifier, and RabbitMQ routes live order events by topic. The optional landing consumer connects event batches to the same warehouse flow.
+The project combines version control, automated checks, a Snowflake batch pipeline, an Iris Mage pipeline, and RabbitMQ topic routing.
 
 **Reflection:** The intentional CI failure was caused by temporarily changing the test split to 30%, which produced 105 training rows instead of the required 120. The failed GitHub check exposed the mismatch. Restoring the 80/20 split returned the expected 120 training rows and 30 test rows, and the follow-up Actions run passed.
-
-## Optional bonus: stream-to-lakehouse
-
-The Snowflake and RabbitMQ services were run live for the main assignment. This optional bonus is a separate integration and is not claimed in this report version. To claim it, implement a consumer that batches RabbitMQ messages for one minute, writes them to a landing file, loads them into Snowflake, and reuses the FreshCart idempotent transformations and `MERGE`. Show the batch count and load result, then replay the same batch and demonstrate that the Gold order count, revenue, and points remain unchanged. A short consumer code excerpt plus run output and before/after Gold query results are sufficient evidence.
 
 ## Final evidence checklist
 
 - [x] Add Mahima Pandey, roll number 23BCS155, and the GitHub repository URL to the cover.
 - [x] Publish the repo with separate meaningful commits and include `git log --oneline`.
-The non-Mage report sections are complete using the available screenshots, assignment materials, and code analysis. The appendix includes the supplied GitHub, Snowflake, and RabbitMQ screenshots. The intentional CI failure and passing fix provide the reflection example. The optional stream-to-lakehouse bonus is not claimed. Mage will be added when its screenshots are available.
+The non-Mage report sections are complete using the available screenshots, assignment materials, and code analysis. The appendix includes the supplied GitHub, Snowflake, and RabbitMQ screenshots. The intentional CI failure and passing fix provide the reflection example. Mage will be added when its screenshots are available.
 
 ## Evidence appendix - captured screenshots
 
