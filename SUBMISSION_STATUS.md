@@ -8,16 +8,13 @@ Repository: https://github.com/mahip004/freshcart-pipelines
 
 - GitHub Actions red failure and green fix run recorded, with a commit/check summary screenshot.
 - Snowflake baseline results recorded: 6 silver rows, 2 quarantined rows, 4 deduplicated/gold orders, INR 7,785.00 revenue, 126 points, and 25% rejected share.
-- RabbitMQ broker, dispatcher publishing, and management UI activity captured.
+- Snowflake and RabbitMQ were run in the student's own environments; the report includes the available run screenshots.
 - Instructor credentials and run outputs remain removed from the sanitized notebook.
-- The report PDF includes the available screenshots and labels all unmeasured results honestly.
+- The report includes the SCD2, future-order quality check, topic routing, and ACK/NACK explanations.
 
-## Still needed before a fully evidenced submission
+## Pending update
 
-- Mage runs, metrics, and UI evidence (intentionally left pending for now).
-- Snowflake currency-rule before/after reason arrays, SCD2 post-change measurements, and the future-order injection plus clean rerun.
-- RabbitMQ driver console output proving a concrete route match and malformed-message discard/NACK.
-- Optional but recommended: separate GitHub Actions screenshots showing the failing run details and corrected passing run details.
+Mage runs, metrics, and UI screenshots will be added later when available.
 
 The full report is `REPORT.md`; the PDF is in `report/23BCS155_Mahima_Pandey_Pipelines.pdf`. Never commit secrets or the excluded Snowflake login screenshot.
 

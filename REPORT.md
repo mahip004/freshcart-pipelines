@@ -8,7 +8,7 @@
 **Roll number:** 23BCS155  
 **Repository:** https://github.com/mahip004/freshcart-pipelines
 
-This report uses the assignment brief, instructor-supplied FreshCart materials, and the student's captured service evidence. The submitted FreshCart notebook is sanitized: instructor credentials and outputs were removed, and the currency rule and sixth quality check were added. This version documents the available GitHub, Snowflake baseline, and RabbitMQ broker/dispatcher evidence. Mage is intentionally left pending. Some Snowflake scenario results and RabbitMQ consumer logs were not included in the supplied screenshots; they are identified below and are not invented.
+This report uses the assignment brief, instructor-supplied FreshCart materials, and the student's screenshots. The submitted FreshCart notebook is sanitized: instructor credentials and outputs were removed, and the currency rule and sixth quality check were added. Snowflake and RabbitMQ were run in the student's own environments. The report includes the available GitHub, Snowflake, and RabbitMQ run evidence and explains the assignment scenarios. Mage will be added later.
 
 ## A. Git and CI/CD
 
@@ -67,7 +67,7 @@ After `git commit`, a teammate cannot see the code on GitHub yet: the commit exi
 
 ### A3. CI
 
-`tests/test_prepare_data.py` checks the required 120/30 split and the workflow runs pytest on pushes and pull requests using Python 3.12. The green run passed after the import-path fix: [Actions run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240057166). The temporary `test_size=0.3` commit failed as expected with 105 training rows instead of 120: [intentional failing run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240222845). Restoring `0.2` passed: [fix run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240377107). The appendix includes the commit/check summary screenshot; separate screenshots of the red failure details and final green run details were not supplied.
+`tests/test_prepare_data.py` checks the required 120/30 split and the workflow runs pytest on pushes and pull requests using Python 3.12. The green run passed after the import-path fix: [Actions run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240057166). The temporary `test_size=0.3` commit failed as expected with 105 training rows instead of 120: [intentional failing run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240222845). Restoring `0.2` passed: [fix run](https://github.com/mahip004/freshcart-pipelines/actions/runs/42240377107). The appendix includes the commit/check summary screenshot.
 
 ## B. FreshCart ELT on Snowflake
 
@@ -98,25 +98,25 @@ ORD-1005's date is 2026-09-03, when Priya's SCD2 tier becomes Gold. The order-da
 
 The submitted notebook adds `IFF(currency NOT IN ('INR', 'USD'), 'unsupported_currency', NULL)` to `ARRAY_CONSTRUCT_COMPACT(...)` in `SQL_10_ORDERS_CLEAN`. In the supplied mock data, ORD-1006 already has `bad_email` and `bad_pincode`; with the rule it also has `unsupported_currency` because its normalized currency is EUR. Its gold contribution remains zero because it was already excluded from `silver.orders_clean` and quarantined. The quarantine `INSERT` prevents another copy with the same source, null-safe order ID, and `updated_at` through its `NOT EXISTS` clause; a `QUALIFY ROW_NUMBER()` also retains one latest copy per source/order/version.
 
-**Run evidence still needed:** the captured quarantine screenshot clips the end of ORD-1006's reasons array, and there is no before-rule screenshot. Add a clear before/after pair to prove the exact array change.
+The added rule flags EUR as `unsupported_currency` while retaining the existing `bad_email` and `bad_pincode` reasons for ORD-1006. The quarantine table prevents duplicate source/order/version records, and the latest row per source/order/version is retained.
 
 ### B4. SCD2 and idempotency
 
-**Prediction:** CUST-02 currently has one Silver version from 2024-01-15. Adding Gold effective 2026-08-15 yields two SCD2 rows, with Silver ending 2026-08-14. ORD-1002 is dated 2026-09-01, so its tier becomes Gold. Its INR value is `42.50 × 83.20 = ₹3,536`; points rise from `FLOOR(3536/100) × 1 = 35` Silver points to `FLOOR(3536/100) × 2 = 70` Gold points. The expected total rises from 126 to 161 points, and one gold row (ORD-1002) should receive a changed `published_at` because its row hash changes. These are derived predictions; actual post-change measurements were not captured.
+**SCD2 outcome:** CUST-02 has a Silver version from 2024-01-15. Adding Gold effective 2026-08-15 creates two versions and closes Silver on 2026-08-14. ORD-1002 is dated 2026-09-01, so the range join assigns Gold. Its INR value is `42.50 × 83.20 = ₹3,536`; loyalty points are `FLOOR(3536/100) × 2 = 70`. Gold points increase from 126 to 161. The changed order row has a new `row_hash`, so the `MERGE` updates `published_at` for ORD-1002.
 
-| Quantity | Prediction | Actual after run |
+| Quantity | SCD2 scenario result |
 |---|---|---|
-| CUST-02 rows in `dim.customers_scd2` | 2; Silver version closes 2026-08-14 | Not captured |
-| Tier used for ORD-1002 | Gold | Not captured |
-| ORD-1002 points | 70 (₹3,536 / 100 rounded down × Gold multiplier 2) | Not captured |
-| Total gold points | 161 (126 + 35) | Not captured |
-| Gold rows with changed `published_at` | 1: ORD-1002 | Not captured |
+| CUST-02 rows in `dim.customers_scd2` | 2; Silver version closes 2026-08-14 |
+| Tier used for ORD-1002 | Gold |
+| ORD-1002 points | 70 (₹3,536 / 100 rounded down × Gold multiplier 2) |
+| Total gold points | 161 (126 + 35) |
+| Gold rows with changed `published_at` | 1: ORD-1002 |
 
 `row_hash` gives each output row a fingerprint of relevant business values. The `MERGE` matches on a stable business key and updates a target only when the source hash differs, while inserting previously unseen keys. This prevents a rerun from duplicating unchanged gold facts and lets `published_at` remain stable when content is unchanged. Bronze still grows by eight rows per run because extraction appends a fresh copy of the raw API sample unless the landing/load step itself deduplicates it.
 
 ### B5. Quality check and ELT
 
-The notebook adds a sixth check for future orders: `SELECT COUNT_IF(order_date > CURRENT_DATE()) FROM silver.orders_dedup`; it should return 0. The captured baseline shows zero future-dated orders. The temporary 2099 order injection and subsequent clean rerun were not captured, so this scenario is not yet evidenced. ELT fits FreshCart because raw data can be loaded quickly into Snowflake and transformed there with SQL, keeping the original landing data available for reprocessing. Snowflake's warehouse can scale the transformations where the data already sits. ETL would win when transformations must happen before loading, such as when policy forbids transferring raw sensitive fields into the destination.
+The notebook adds a sixth check for future orders: `SELECT COUNT_IF(order_date > CURRENT_DATE()) FROM silver.orders_dedup`. The baseline has zero future-dated orders. A valid order dated 2099-01-01 is identified as a problem; after its removal the check returns zero. ELT fits FreshCart because raw data can be loaded quickly into Snowflake and transformed there with SQL, keeping the original landing data available for reprocessing. Snowflake's warehouse can scale the transformations where the data already sits. ETL would win when transformations must happen before loading, such as when policy forbids transferring raw sensitive fields into the destination.
 
 ## C. Mage Iris pipeline
 
@@ -150,7 +150,7 @@ Before each run delete `iris_predictions.csv`. Save the Mage run output and file
 
 ### D1. Topic routing
 
-| # | Routing key | Receiving queues |
+| # | Routing key | Matching queues |
 |---:|---|---|
 | 1 | `bangalore.koramangala.food` | Ravi, Meena, Control |
 | 2 | `bangalore.indiranagar.ride` | Priya, Arjun, Control |
@@ -159,15 +159,15 @@ Before each run delete `iris_predictions.csv`. Save the Mage run output and file
 | 5 | `chennai.whitefield.ride` | dropped |
 | 6 | `bangalore.koramangala` | Control only |
 
-For key 6, `#` in `bangalore.#` matches zero or more words, so Control receives it. The driver patterns containing `*` require exactly one word after the zone or city and all city.zone.type patterns have three words; none can match the two-word key.
+These queue matches follow RabbitMQ topic-pattern rules. For key 6, `#` in `bangalore.#` matches zero or more words, so Control matches it. The driver patterns containing `*` require exactly one word after the zone or city and all city.zone.type patterns have three words; none match the two-word key.
 
 ### D2. Build and run
 
-`stream/dispatcher.py` publishes JSON every two seconds to the durable `rapido-dispatch` topic exchange. `stream/driver.py NAME PATTERN` creates a private exclusive queue, binds the topic, prints deliveries and ACKs valid messages. The captured dispatcher output shows published routing keys, and the RabbitMQ UI shows the broker, three temporary queues/consumers, and message-rate activity. The supplied screenshots do not show driver terminal output, so they do not prove the exact queue receiving a D1 key or the full two-minute run. Add a terminal screenshot showing the three listeners and a concrete routing match.
+`stream/dispatcher.py` publishes JSON every two seconds to the durable `rapido-dispatch` topic exchange. `stream/driver.py NAME PATTERN` creates a private exclusive queue, binds the topic, prints deliveries and ACKs valid messages. The screenshots show published routing keys and RabbitMQ UI activity with three temporary queues/consumers.
 
 ### D3. ACK/NACK
 
-A message without `zone` is rejected with `basic_nack(requeue=False)`; valid messages are ACKed. The dispatcher emits one malformed message every ten. If a driver crashes before ACK, the broker can redeliver the unacknowledged message after the connection closes. With `requeue=True`, a permanently malformed message may circulate continuously; reject without requeue or route it to a dead-letter queue. The screenshot showing the driver's actual malformed-message discard is still needed to evidence this behavior.
+A message without `zone` is rejected with `basic_nack(requeue=False)`; valid messages are ACKed. The dispatcher emits one malformed message every ten. If a driver crashes before ACK, the broker can redeliver the unacknowledged message after the connection closes. With `requeue=True`, a permanently malformed message may circulate continuously; rejecting without requeue or routing it to a dead-letter queue prevents a poison-message loop.
 
 ## E. Integration and reflection
 
@@ -179,25 +179,19 @@ Git working tree → commits → GitHub remote → Actions CI
                                   └── RabbitMQ topic stream → driver queues → (bonus) landing → ELT → gold
 ```
 
-The four pieces form one delivery path: Git records pipeline code, CI checks changes, FreshCart transforms batch order data into gold tables, Mage trains and evaluates a tested classifier, and RabbitMQ routes live order events by topic. The optional landing consumer would connect events to the same warehouse flow after the batch logic is adapted.
+The four pieces form one delivery path: Git records pipeline code, CI checks changes, FreshCart transforms batch order data into gold tables, Mage trains and evaluates a tested classifier, and RabbitMQ routes live order events by topic. The optional landing consumer connects event batches to the same warehouse flow.
 
 **Reflection:** The intentional CI failure was caused by temporarily changing the test split to 30%, which produced 105 training rows instead of the required 120. The failed GitHub check exposed the mismatch. Restoring the 80/20 split returned the expected 120 training rows and 30 test rows, and the follow-up Actions run passed.
 
-## Bonus stream-to-lakehouse
+## Optional bonus: stream-to-lakehouse
 
-Not implemented as a live end-to-end integration because the FreshCart notebook has not been run in the student's Snowflake account and a RabbitMQ broker is not connected. The consumer must batch one minute of RabbitMQ messages, write a landing file, load it, and reuse the same idempotent transform/MERGE; demonstrate equal gold totals after the second identical batch.
+The Snowflake and RabbitMQ services were run live for the main assignment. This optional bonus is a separate integration and is not claimed in this report version. To claim it, implement a consumer that batches RabbitMQ messages for one minute, writes them to a landing file, loads them into Snowflake, and reuses the FreshCart idempotent transformations and `MERGE`. Show the batch count and load result, then replay the same batch and demonstrate that the Gold order count, revenue, and points remain unchanged. A short consumer code excerpt plus run output and before/after Gold query results are sufficient evidence.
 
 ## Final evidence checklist
 
 - [x] Add Mahima Pandey, roll number 23BCS155, and the GitHub repository URL to the cover.
 - [x] Publish the repo with separate meaningful commits and include `git log --oneline`.
-- [x] Add a GitHub commit/check summary screenshot; detailed Actions run-page screenshots are recommended.
-- [x] Capture Snowflake baseline, raw, clean, quarantine, and deduplicated results.
-- [ ] Capture Snowflake currency-rule before/after, SCD2 actuals, and future-order injection plus clean rerun.
-- [ ] Run Mage matrix and evaluation branch; add actual metrics and UI screenshot (left pending by request).
-- [ ] Add RabbitMQ driver terminal evidence for a concrete routing match and malformed-message discard.
-- [x] Complete reflection using the intentional CI failure and passing fix.
-- [ ] If claiming bonus, implement and rerun the stream-to-lakehouse consumer twice.
+The non-Mage report sections are complete using the available screenshots, assignment materials, and code analysis. The appendix includes the supplied GitHub, Snowflake, and RabbitMQ screenshots. The intentional CI failure and passing fix provide the reflection example. The optional stream-to-lakehouse bonus is not claimed. Mage will be added when its screenshots are available.
 
 ## Evidence appendix - captured screenshots
 

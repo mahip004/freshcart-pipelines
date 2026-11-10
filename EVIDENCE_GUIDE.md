@@ -44,5 +44,5 @@ Folder: `outputs/evidence/Mage/`
 
 ## Current state
 
-The screenshots currently supplied have been grouped, copied into the project evidence folders, and added to the report PDF. The report lists the remaining evidence that still needs to be captured. The Snowflake login screenshot was excluded because it showed account/user details. Do not upload passwords, tokens, or an unredacted executed notebook.
+The screenshots currently supplied have been grouped, copied into the project evidence folders, and added to the report PDF. Snowflake and RabbitMQ were run in the student's own environments. Mage screenshots will be added later. The Snowflake login screenshot was excluded because it showed account/user details. Do not upload passwords, tokens, or an unredacted executed notebook.
 
