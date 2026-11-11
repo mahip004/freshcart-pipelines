@@ -203,6 +203,12 @@ The project combines version control, automated checks, a Snowflake batch pipeli
 
 ![RabbitMQ overview with active consumers and message rates](evidence/RabbitMQ/rabbitmq_overview_activity.png)
 
+![RabbitMQ node status and process statistics](evidence/RabbitMQ/rabbitmq_node_status.png)
+
+![RabbitMQ final broker overview](evidence/RabbitMQ/rabbitmq_overview_final.png)
+
+![RabbitMQ final queues and message rates](evidence/RabbitMQ/rabbitmq_queues_final.png)
+
 ![RabbitMQ temporary queues](evidence/RabbitMQ/rabbitmq_auto_delete_queues.png)
 
 ### Mage
