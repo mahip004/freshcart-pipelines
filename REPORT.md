@@ -8,7 +8,7 @@
 **Roll number:** 23BCS155  
 **Repository:** https://github.com/mahip004/freshcart-pipelines
 
-This report uses the assignment brief, instructor-supplied FreshCart materials, and the student's screenshots. The submitted FreshCart notebook is sanitized: instructor credentials and outputs were removed, and the currency rule and sixth quality check were added. Snowflake and RabbitMQ were run in the student's own environments. The report includes the available GitHub, Snowflake, and RabbitMQ run evidence and explains the assignment scenarios. Mage will be added later.
+This report uses the assignment brief, instructor-supplied FreshCart materials, and the student's screenshots. The submitted FreshCart notebook is sanitized: instructor credentials and outputs were removed, and the currency rule and sixth quality check were added. Snowflake and RabbitMQ were run in the student's own environments. The report includes the available GitHub, Snowflake, RabbitMQ, and Mage run evidence and explains the assignment scenarios.
 
 ## A. Git and CI/CD
 
@@ -120,31 +120,31 @@ The notebook adds a sixth check for future orders: `SELECT COUNT_IF(order_date >
 
 ## C. Mage Iris pipeline
 
-### C1. Graph and run - pending
+### C1. Graph and run
 
-Graph: `load_iris (data_loader) → validate_iris (transformer) → prepare_data (transformer) → train_model (transformer) → {save_results (data_exporter), evaluate_model (transformer)}`. Each block includes an attached `@test`. The project's metadata and importable blocks are included. **Run evidence required:** use Mage's CLI `mage run iris_project iris_classifier --test` in the configured Mage environment and append its output; The Mage Iris class materials and runtime were not supplied here.
+The supplied Mage evidence records `mage run iris_project iris_classifier --test` completing successfully. The terminal output includes passing block tests, evaluation output, and `Pipeline run completed`. The DBT library notice did not stop the run. The evidence appendix includes the terminal run capture and the Mage UI graph.
 
-### C2. Test gate - pending
+### C2. Test gate
 
-The `train_model` test enforces accuracy >= 0.85. A failing block test marks the block run as failed, so downstream exporters are not scheduled from that failed output; `save_results` therefore does not write a prediction file. This gate prevents invalid artifacts from being mistaken for valid outputs and avoids having to detect and remove a bad file later.
+The supplied run evidence shows `train_model` tested at `max_depth` 1 through 5. Its acceptance threshold is 0.9: depth 1 scores 0.6667 and fails, so the downstream `save_results` exporter does not create `iris_predictions.csv`. Depths 2–5 pass and create the CSV.
 
 | max_depth | Test accuracy | Test passed? | CSV created? |
 |---:|---:|---|---|
-| 1 | Pending Mage run | Pending | Pending |
-| 2 | Pending Mage run | Pending | Pending |
-| 3 | Pending Mage run | Pending | Pending |
-| 4 | Pending Mage run | Pending | Pending |
-| 5 | Pending Mage run | Pending | Pending |
+| 1 | 0.6667 | No | No |
+| 2 | 0.9333 | Yes | Yes |
+| 3 | 0.9667 | Yes | Yes |
+| 4 | 0.9333 | Yes | Yes |
+| 5 | 0.9333 | Yes | Yes |
 
-Before each run delete `iris_predictions.csv`. Save the Mage run output and file state when Mage is completed.
+The evidence appendix includes the captured result table. The source PDF has one conflicting figure: its terminal summary displays 0.9567 for depth 3, while the detailed results table and evaluation output show 0.9667. The report uses 0.9667 from the detailed table and evaluation output. The current repository's `train_model.py` uses `>= 0.85`, so that source needs to be aligned to the demonstrated 0.9 gate before claiming that the repository reproduces the depth-1 failure.
 
-### C3. Evaluation branch - pending
+### C3. Evaluation branch
 
-`metadata.yaml` includes the branch from `train_model` to `save_results` and `evaluate_model`. The block returns a confusion matrix and a classification metrics table. **Evidence required:** run the project in Mage, include the actual confusion matrix/metrics, and capture the Cloudflare-tunnel Mage UI graph. Mage Iris class materials and a live tunnel were not supplied.
+The supplied Mage run shows `train_model` branching to `save_results` and `evaluate_model`. At depth 3, the confusion matrix is `[[10, 0, 0], [0, 9, 1], [0, 0, 10]]`. Overall accuracy is 0.9667 across 30 test rows. The class 1 recall is 0.9000 and class 2 precision is 0.9091; the macro and weighted F1 scores are both 0.9666. The appendix includes the evaluation metrics table and the terminal run output containing the confusion matrix.
 
-### C4. Own block - code prepared; Mage run pending
+### C4. Own block
 
-`validate_iris` checks for no missing values and exactly three classes, with its own `@test`; it sits after `load_iris`. Commit it and verify CI remains green.
+The supplied Mage evidence describes a `save_metrics` exporter after `evaluate_model`. It writes the metrics table to `iris_metrics.csv` and includes a test that checks the file exists and is not empty. The appendix includes the Mage graph showing that branch and exporter. The current repository contains `validate_iris` as its own tested block, but does not yet contain `save_metrics`; add that exporter and update `metadata.yaml` if the repository must reproduce the C4 graph shown here.
 
 ## D. Food-order stream
 
@@ -187,7 +187,7 @@ The project combines version control, automated checks, a Snowflake batch pipeli
 
 - [x] Add Mahima Pandey, roll number 23BCS155, and the GitHub repository URL to the cover.
 - [x] Publish the repo with separate meaningful commits and include `git log --oneline`.
-The non-Mage report sections are complete using the available screenshots, assignment materials, and code analysis. The appendix includes the supplied GitHub, Snowflake, and RabbitMQ screenshots. The intentional CI failure and passing fix provide the reflection example. Mage will be added when its screenshots are available.
+The report includes the supplied GitHub, Snowflake, RabbitMQ, and Mage evidence. The intentional CI failure and passing fix provide the reflection example. The Mage appendix uses the run output, depth results, evaluation metrics, and graph from the supplied Part C PDF.
 
 ## Evidence appendix - captured screenshots
 
@@ -215,5 +215,10 @@ The non-Mage report sections are complete using the available screenshots, assig
 
 ### Mage
 
-Pending; no Mage screenshots or live-run results were supplied. This section will be completed after the Mage runs.
+![Mage CLI run with passing tests, accuracy, confusion matrix, and completed pipeline](evidence/Mage/mage_pipeline_test_run.png)
 
+![Mage test accuracy and prediction CSV results for max_depth 1 to 5](evidence/Mage/mage_test_depth_results.png)
+
+![Mage evaluation metrics table](evidence/Mage/mage_evaluation_metrics.png)
+
+![Mage pipeline graph with evaluation branch and save_metrics exporter](evidence/Mage/mage_final_pipeline_graph.png)
