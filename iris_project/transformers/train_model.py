@@ -19,5 +19,4 @@ def train_model(df: pd.DataFrame, max_depth: int = 3, random_state: int = 42):
 
 @test
 def test_accuracy_is_acceptable(output, **kwargs):
-    assert output["accuracy"] >= 0.85, f"accuracy too low: {output['accuracy']:.3f}"
-
+    assert output["accuracy"] >= 0.9, f"accuracy too low: {output['accuracy']:.3f}"

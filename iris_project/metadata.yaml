@@ -22,5 +22,8 @@ blocks:
 - uuid: evaluate_model
   type: transformer
   name: evaluate_model
+  downstream_blocks: [save_metrics]
+- uuid: save_metrics
+  type: data_exporter
+  name: save_metrics
   downstream_blocks: []
-

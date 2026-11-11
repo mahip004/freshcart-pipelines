@@ -136,7 +136,7 @@ The supplied run evidence shows `train_model` tested at `max_depth` 1 through 5.
 | 4 | 0.9333 | Yes | Yes |
 | 5 | 0.9333 | Yes | Yes |
 
-The evidence appendix includes the captured result table. The source PDF has one conflicting figure: its terminal summary displays 0.9567 for depth 3, while the detailed results table and evaluation output show 0.9667. The report uses 0.9667 from the detailed table and evaluation output. The current repository's `train_model.py` uses `>= 0.85`, so that source needs to be aligned to the demonstrated 0.9 gate before claiming that the repository reproduces the depth-1 failure.
+The evidence appendix includes the captured result table. The source PDF has one conflicting figure: its terminal summary displays 0.9567 for depth 3, while the detailed results table and evaluation output show 0.9667. The report uses 0.9667 from the detailed table and evaluation output. The repository source now uses the demonstrated 0.9 gate. Its pipeline also retains the separately prepared `validate_iris` block before `prepare_data`, which is not visible in the supplied Mage graph screenshot.
 
 ### C3. Evaluation branch
 
@@ -144,7 +144,7 @@ The supplied Mage run shows `train_model` branching to `save_results` and `evalu
 
 ### C4. Own block
 
-The supplied Mage evidence describes a `save_metrics` exporter after `evaluate_model`. It writes the metrics table to `iris_metrics.csv` and includes a test that checks the file exists and is not empty. The appendix includes the Mage graph showing that branch and exporter. The current repository contains `validate_iris` as its own tested block, but does not yet contain `save_metrics`; add that exporter and update `metadata.yaml` if the repository must reproduce the C4 graph shown here.
+The supplied Mage evidence describes a `save_metrics` exporter after `evaluate_model`. It writes the metrics table to `iris_metrics.csv` and includes a test that checks the file exists and is not empty. The appendix includes the Mage graph showing that branch and exporter. The repository includes the `save_metrics` exporter, its non-empty-file test, and the metadata dependency from `evaluate_model`. It also retains the separately prepared `validate_iris` block before `prepare_data`; that block is not visible in the supplied graph screenshot.
 
 ## D. Food-order stream
 

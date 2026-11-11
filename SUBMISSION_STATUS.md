@@ -14,6 +14,6 @@ Repository: https://github.com/mahip004/freshcart-pipelines
 
 ## Remaining repository alignment
 
-The supplied Mage evidence shows a `train_model` accuracy gate of 0.9 and a `save_metrics` exporter. The packaged repository currently has a 0.85 gate and does not include that exporter; align the code and pipeline metadata before claiming the repository reproduces that exact run.
+The Mage source now uses the demonstrated 0.9 accuracy gate and includes the `save_metrics` exporter. The packaged graph retains the separately prepared `validate_iris` block, which is not visible in the supplied Mage screenshot.
 
 The full report is `REPORT.md`; the PDF is in `report/23BCS155_Mahima_Pandey_Pipelines.pdf`. Never commit secrets or the excluded Snowflake login screenshot.
