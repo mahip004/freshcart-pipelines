@@ -1,17 +1,28 @@
-import pandas as pd
-try:
-    from mage_ai.data_preparation.decorators import data_exporter, test
-except ImportError:
-    def data_exporter(fn): return fn
-    def test(fn): return fn
+import os
+
+if 'data_exporter' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import data_exporter
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import data_exporter
+if 'test' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import test
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import test
+
 
 @data_exporter
-def save_results(result, output_path="iris_predictions.csv", **kwargs):
-    pred = result["model"].predict(result["X_test"])
-    pd.DataFrame({"actual": result["y_test"].to_numpy(), "predicted": pred}).to_csv(output_path, index=False)
-    return output_path
+def export_data(data, *args, **kwargs):
+    out = data['X_test'].copy()
+    out['actual'] = data['y_test']
+    out['predicted'] = data['preds']
+    out.to_csv('iris_predictions.csv', index=False)
+
 
 @test
-def test_file_path(output, **kwargs):
-    assert output.endswith("iris_predictions.csv")
+def test_output(*args):
+    assert os.path.exists('iris_predictions.csv')
 
+
+save_results = export_data

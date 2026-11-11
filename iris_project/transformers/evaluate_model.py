@@ -1,20 +1,39 @@
 import pandas as pd
-from sklearn.metrics import confusion_matrix, classification_report
-try:
-    from mage_ai.data_preparation.decorators import transformer, test
-except ImportError:
-    def transformer(fn): return fn
-    def test(fn): return fn
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
+
+if 'transformer' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import transformer
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import transformer
+if 'test' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import test
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import test
+
 
 @transformer
-def evaluate_model(result, **kwargs):
-    pred = result["model"].predict(result["X_test"])
-    return {"confusion_matrix": confusion_matrix(result["y_test"], pred).tolist(),
-            "metrics": classification_report(result["y_test"], pred, output_dict=True),
-            "accuracy": result["accuracy"]}
+def evaluate(data, *args, **kwargs):
+    y_test = np.asarray(data['y_test'], dtype='int64')
+    predictions = np.asarray(data['preds'], dtype='int64')
+
+    cm = confusion_matrix(y_test, predictions)
+    print('Confusion matrix')
+    print(pd.DataFrame(cm))
+    report = classification_report(y_test, predictions, output_dict=True)
+    metrics = pd.DataFrame(report).transpose().reset_index()
+    metrics = metrics.rename(columns={'index': 'label'})
+    print('Metrics')
+    print(metrics.to_string(index=False))
+    return metrics
+
 
 @test
-def test_metrics(output, **kwargs):
-    assert len(output["confusion_matrix"]) == 3
-    assert 0 <= output["accuracy"] <= 1
+def test_output(output, *args):
+    assert 'precision' in output.columns
+    assert len(output) >= 5
 
+
+evaluate_model = evaluate

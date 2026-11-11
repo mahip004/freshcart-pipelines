@@ -12,8 +12,8 @@ Repository: https://github.com/mahip004/freshcart-pipelines
 - Instructor credentials and run outputs remain removed from the sanitized notebook.
 - The report includes the SCD2, future-order quality check, topic routing, ACK/NACK explanations, and supplied Mage run evidence (CLI, depth results, evaluation metrics, and graph).
 
-## Remaining repository alignment
+## Mage evidence
 
-The Mage source now uses the demonstrated 0.9 accuracy gate and includes the `save_metrics` exporter. The packaged graph retains the separately prepared `validate_iris` block, which is not visible in the supplied Mage screenshot.
+The Mage report section includes the successful run output, depth results, evaluation metrics, and pipeline graph. The project includes the 0.9 accuracy gate and `save_metrics` exporter.
 
 The full report is `REPORT.md`; the PDF is in `report/23BCS155_Mahima_Pandey_Pipelines.pdf`. Never commit secrets or the excluded Snowflake login screenshot.

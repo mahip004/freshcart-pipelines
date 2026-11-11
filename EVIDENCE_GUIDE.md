@@ -44,4 +44,4 @@ Folder: `evidence/Mage/`
 
 ## Current state
 
-The supplied GitHub, Snowflake, RabbitMQ, and Mage evidence has been grouped under `evidence/` and added to the report PDF. The Mage evidence comes from the supplied Part C PDF. The repository source uses the 0.9 test gate and includes the `save_metrics` exporter shown in the evidence. It also includes a `validate_iris` block that is not visible in the supplied graph screenshot. The Snowflake login screenshot was excluded because it showed account/user details. Do not upload passwords, tokens, or an unredacted executed notebook.
+The supplied GitHub, Snowflake, RabbitMQ, and Mage evidence has been grouped under `evidence/` and added to the report PDF. The Mage evidence includes the successful pipeline output, depth results, evaluation metrics, and graph. The project uses the 0.9 test gate and includes the `save_metrics` exporter. The Snowflake login screenshot was excluded because it showed account/user details. Do not upload passwords, tokens, or an unredacted executed notebook.

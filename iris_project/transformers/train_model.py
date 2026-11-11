@@ -1,22 +1,54 @@
-from __future__ import annotations
-import pandas as pd
+from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
-try:
-    from mage_ai.data_preparation.decorators import transformer, test
-except ImportError:
-    def transformer(fn): return fn
-    def test(fn): return fn
+import pandas as pd
+
+if 'transformer' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import transformer
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import transformer
+if 'test' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import test
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import test
+
 
 @transformer
-def train_model(df: pd.DataFrame, max_depth: int = 3, random_state: int = 42):
-    train = df[df.split == "train"]
-    holdout = df[df.split == "test"]
-    model = DecisionTreeClassifier(max_depth=max_depth, random_state=random_state)
-    model.fit(train.drop(columns=["target", "split"]), train.target)
-    accuracy = float(model.score(holdout.drop(columns=["target", "split"]), holdout.target))
-    return {"model": model, "accuracy": accuracy, "max_depth": max_depth,
-            "X_test": holdout.drop(columns=["target", "split"]), "y_test": holdout.target}
+def train(data, *args, **kwargs):
+    max_depth = int(kwargs.get('max_depth', 3))
+    model = DecisionTreeClassifier(max_depth=max_depth, random_state=42)
+
+    y_train = data['y_train'].map(
+        lambda value: value.get('target') if isinstance(value, dict) else value
+    ).astype('int64')
+    y_test = data['y_test'].map(
+        lambda value: value.get('target') if isinstance(value, dict) else value
+    ).astype('int64')
+
+    model.fit(data['X_train'], y_train)
+
+    predictions = model.predict(data['X_test'])
+    accuracy = accuracy_score(y_test, predictions)
+    predictions = predictions.tolist()
+
+    print(f'max_depth={max_depth} test_accuracy={accuracy:.4f}')
+
+    return {
+        'model': model,
+        'X_test': data['X_test'],
+        'y_test': y_test.tolist(),
+        'preds': predictions,
+        'predictions': predictions,
+        'accuracy': accuracy,
+        'max_depth': model.max_depth
+    }
+
+
 
 @test
-def test_accuracy_is_acceptable(output, **kwargs):
-    assert output["accuracy"] >= 0.9, f"accuracy too low: {output['accuracy']:.3f}"
+def test_accuracy(output, *args):
+    assert output['accuracy'] >= 0.9, f"accuracy {output['accuracy']:.4f} below 0.9"
+
+
+train_model = train

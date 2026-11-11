@@ -6,3 +6,5 @@ __pycache__/
 .pytest_cache/
 .venv/
 
+# Local Mage/AWS tunnel configuration; never publish credentials.
+.ssh_tunnel/

@@ -1,25 +1,26 @@
-from pathlib import Path
+import os
 
-import pandas as pd
-
-try:
-    from mage_ai.data_preparation.decorators import data_exporter, test
-except ImportError:
-    def data_exporter(fn):
-        return fn
-    def test(fn):
-        return fn
+if 'data_exporter' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import data_exporter
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import data_exporter
+if 'test' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import test
+    except ModuleNotFoundError:
+        from iris_project.mage_compat import test
 
 
 @data_exporter
-def save_metrics(result, output_path="iris_metrics.csv", **kwargs):
-    metrics = pd.DataFrame.from_dict(result["metrics"], orient="index")
-    metrics.to_csv(output_path, index_label="label")
-    return output_path
+def export_data(metrics, *args, **kwargs):
+    metrics.to_csv('iris_metrics.csv', index=False)
 
 
 @test
-def test_metrics_file(output, **kwargs):
-    path = Path(output)
-    assert path.is_file(), f"metrics file was not created: {path}"
-    assert path.stat().st_size > 0, f"metrics file is empty: {path}"
+def test_output(*args):
+    assert os.path.exists('iris_metrics.csv')
+    assert os.path.getsize('iris_metrics.csv') > 0
+
+
+save_metrics = export_data
